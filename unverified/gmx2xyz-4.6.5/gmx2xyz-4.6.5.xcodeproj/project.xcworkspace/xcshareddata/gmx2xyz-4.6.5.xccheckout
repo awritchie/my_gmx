@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>858B525E-8B37-4FC5-91E3-4283EF1CFB72</string>
+	<key>IDESourceControlProjectName</key>
+	<string>gmx2xyz-4.6.5</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>D4CBD46DA15A02B5814C679468BB25AD871B9B97</key>
+		<string>https://github.com/webbgroup-physical-chemistry/GroupCode.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>new_gromacs/gmx2xyz-4.6.5/gmx2xyz-4.6.5.xcodeproj</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>D4CBD46DA15A02B5814C679468BB25AD871B9B97</key>
+		<string>../../../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/webbgroup-physical-chemistry/GroupCode.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>D4CBD46DA15A02B5814C679468BB25AD871B9B97</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>D4CBD46DA15A02B5814C679468BB25AD871B9B97</string>
+			<key>IDESourceControlWCCName</key>
+			<string>Utilities</string>
+		</dict>
+	</array>
+</dict>
+</plist>

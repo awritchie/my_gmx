@@ -1,0 +1,11 @@
+CC=g++
+CFLAGS=-I. -I/usr/local/gromacs/include/gromacs -O
+OBJ=gmx2pqr.cpp
+
+all: $(OBJ)
+	$(CC) -o gmx2pqr $^ $(CFLAGS)
+
+.PHONY: clean
+
+clean:
+	rm -f $(OBJ) gmx2pqr

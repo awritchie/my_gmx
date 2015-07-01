@@ -1,0 +1,2 @@
+seg faults w/o -oa and/or -op flag.  log file contains trajectory name at the end of each lie
+hbonded waters not always duplicated in log file
