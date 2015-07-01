@@ -1,0 +1,186 @@
+#include "gmx_gmx2amoeba_cp.hpp"
+
+typedef struct {
+    int bond[5];
+    int nb;
+} t_bonded;
+
+typedef struct {
+    int atomid;
+    int atomicnum;
+    int nval;
+    float alpha1;
+    float beta1;
+    float alpha2;
+    float beta2;
+    float alpha3;
+    float beta3;
+    bool exists;
+} valence;
+
+typedef struct {
+    std::string atomname;
+    std::string resname;
+    int  atomid;
+    float q;
+    valence val;
+} amoeba_parm;
+
+void fill_val(int atomicnum, int nval, float alpha1, float beta1, float alpha2, float beta2, valence &item) {
+    item.atomicnum = atomicnum;
+    item.nval = nval;
+    item.alpha1 = alpha1;
+    item.beta1 = beta1;
+    item.alpha2 = alpha2;
+    item.beta2 = beta2;
+    return;
+}
+
+void str2val( std::string &a, int &b) {
+    std::stringstream a1(a);
+    a1 >> b;
+}
+void str2val( std::string &a, float &b) {
+    std::stringstream a1(a);
+    a1 >> b;
+}
+
+void read_amoeba_parameters( const char *parm_name, std::vector<valence> &val_parm){
+    // Let's find the number of valence electrons on each atom
+    std::vector<valence> from_table(36);
+    // fill_val(int atomicnum, int nval, float alpha1, float beta1, float alpha2, float beta2, &valence item)
+    for (int i=0;i<(int)from_table.size();i++){
+        fill_val(i,0,0,0,0,0,from_table[i]);
+    }
+    fill_val(1,  1, 2., (1.999+2.010+2.004)/3., 3.3, (2.893,3.041,3.268)/3.,from_table[1]);  // H
+    fill_val(6,  4, 4., (2.646+2.708+2.685)/3., 3.8, (3.021+2.771+2.724)/3.,from_table[6]);  // C
+    fill_val(7,  5, 5., (3.097+3.072+3.054)/3., 3.1, (2.767+2.759+2.733)/3.,from_table[7]);  // N
+    fill_val(8,  6, 6., (3.661+4.282+4.469)/3., 3.5, (3.083+3.350+3.170)/3.,from_table[8]);  // O
+    fill_val(15, 5, 5.,                  2.360,  .0,                     .0,from_table[15]); // P
+    fill_val(16, 6, 6.,       (2.770+2.381)/2.,  .0,                     .0,from_table[16]); // S
+    fill_val(9,  7, 7.,                  4.275,  .0,                     .0,from_table[9]);  // F
+    fill_val(17, 7, 7.,                  2.830,  .0,                     .0,from_table[17]); // Cl
+    fill_val(35, 7, 7.,                  2.564,  .0,                     .0,from_table[35]); // Br
+
+    std::ifstream fffile(parm_name);
+    std::string line;
+    if (fffile.is_open()){
+        while (fffile.good()){
+            getline(fffile,line);
+            if (not line.empty()){
+                std::string mp = line.substr(0,4);
+                if ( mp == "atom" ) {
+                    int atomid, atomicn;
+                    std::vector<std::string> sepline;
+                    std::string item;
+                    std::stringstream ll(line);
+                    while ( ll >> item ) {
+                        sepline.push_back(item);
+                    }
+                    str2val(sepline[1], atomid);
+                    str2val(sepline[(int)sepline.size() -3], atomicn);
+    
+                    int nval;
+                    float alpha1, beta1, alpha2, beta2;
+                    if (atomicn <= 2){
+                        nval = atomicn;
+                    }
+                    else if (atomicn <= 10){
+                        nval = atomicn - 2;
+                    }
+                    else if (atomicn <= 18){
+                        nval = atomicn - 10;
+                    }
+                    else if (atomicn <= 20){
+                        nval = atomicn - 18;
+                    }
+                    else if (atomicn <= 36){
+                        nval = max(2,atomicn - 28);
+                    }
+                    else if (atomicn <= 38){
+                        nval = atomicn - 36;
+                    }
+                    else if (atomicn <= 54){
+                        nval = max(2,atomicn - 46);
+                    }
+                    else if (atomicn <=56){
+                        nval = atomicn - 54;
+                    }
+                    
+                    if (sepline[3].compare(sepline[3].size()-1,1,"+") == 0){
+                        nval--;
+                    }
+                    else if (sepline[3].compare(sepline[3].size()-1,1,"-") == 0){
+                        nval++;
+                    }
+                    alpha1 = max(2,nval);
+                    
+                    val_parm[atomid].atomid = atomid;
+                    val_parm[atomid].atomicnum = atomicn;
+                    val_parm[atomid].nval = nval;
+                    val_parm[atomid].alpha1 = alpha1;
+                    val_parm[atomid].beta1 = from_table[atomicn].beta1;
+                    val_parm[atomid].alpha2 = from_table[atomicn].alpha2;
+                    val_parm[atomid].beta2 = from_table[atomicn].beta2;
+                    val_parm[atomid].alpha3 = (from_table[atomicn].alpha2 == 0) ? alpha1 : from_table[atomicn].alpha2;
+                    val_parm[atomid].beta3  = (from_table[atomicn].beta2  == 0) ? alpha1 : from_table[atomicn].beta2;
+                    val_parm[atomid].exists = true;
+                    //std::cout << "chgpenprm " << atomid << " " << nval << " " << val_parm[atomid].alpha1 << " " << val_parm[atomid].beta1 << std::endl;
+                    //std::cout << nval << " " << val_parm[atomid].alpha1 << " " << val_parm[atomid].alpha2 << " " << val_parm[atomid].alpha3 << std::endl;
+                }
+            }
+        }
+    }
+    else if (!fffile){
+        std::cerr << "\nError reading " << parm_name << std::endl;
+        exit(1);
+    }
+    fffile.close();
+
+    return;
+};
+
+
+
+int gmx_gmx2xyz(int argc, char *argv[])
+{
+    const char      *desc[] = {
+        "\tConvert from GROMACS format to Tinker XYZ format",
+    };
+
+    gmx_bool        bVerbose = FALSE;
+    const char      *out_file = NULL;
+    const char      *parm_name;
+    t_pargs         pa[] = {
+        { "-v", FALSE, etBOOL,
+            {&bVerbose}, "Be slightly more verbose"}
+    };
+    t_filenm        fnm[] = {
+        { efRND, "-a", "amoeba.prm", ffREAD },
+        { efXVG, "-x", "chgpen.xvg", ffWRITE},
+    };
+#define NFILE asize(fnm)
+#define NPA asize(pa)
+    output_env_t    oenv;
+
+    CopyRight(stderr,argv[0]);
+    parse_common_args(&argc, argv, PCA_BE_NICE,
+                      NFILE, fnm, NPA, pa, asize(desc), desc,
+                      0, NULL, &oenv);
+
+    parm_name   = opt2fn("-a", NFILE, fnm);
+    out_file    = opt2fn("-o", NFILE, fnm);
+
+    
+
+    
+    /* Read AMOEBA parameters */
+    std::vector<valence> val_parm(5000);
+    read_amoeba_parameters(parm_name, val_parm);
+    for (int i=0; i<(int)val_parm.size();i++){
+        if (val_parm[i].exists){
+            std::cout << i << " " << val_parm[i].atomid << " " << val_parm[i].alpha1 << " " << val_parm[i].beta1 << std::endl;
+        }
+    }
+    return 0;
+}
